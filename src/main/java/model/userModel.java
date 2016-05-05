@@ -7,6 +7,14 @@ public class userModel {
 	private String password;
 	private String userEmail;
 	private String phone;
+	private String role;
+	
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
 	public int getUserID() {
 		return userID;
 	}
