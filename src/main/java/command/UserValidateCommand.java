@@ -3,7 +3,7 @@ package command;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.Statement;	
 
 import org.apache.log4j.Logger;
 
@@ -26,7 +26,7 @@ public class UserValidateCommand {
 		}
 	}
 	
-	public String validateUser(userModel usermodel){
+	public userModel validateUser(userModel usermodel){
 		String firstName = null;
 		String sql = null;
 		ResultSet rs;
@@ -40,13 +40,17 @@ public class UserValidateCommand {
 				PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO activeuser VALUES(?)");
 				preparedStatement.setString(1, usermodel.getUserEmail());
 				preparedStatement.executeUpdate();
+				
+				usermodel.setRole(rs.getString("role"));
+				usermodel.setUserFirstName(rs.getString("firstname"));
+				
 				firstName = rs.getString("firstName");
 				System.out.println(firstName + "\n");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		return firstName;
+		return usermodel;
 	}
 	
 	public String userRegistration(userModel usermodel){
