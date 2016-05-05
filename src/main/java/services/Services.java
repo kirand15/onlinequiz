@@ -46,14 +46,20 @@ public class Services {
 		userModel usermodel = new userModel();
 		usermodel.setUserEmail(userEmail);;
 		usermodel.setPassword(password);
+		
+		String result;
 		UserValidateCommand userValidateCommand = new UserValidateCommand();
-		String result = userValidateCommand.validateUser(usermodel);
-		if(result == null){
+		usermodel = userValidateCommand.validateUser(usermodel);
+		if(usermodel == null){
 			result = "Invalid Username/Password";
 			response = Response.ok(new Viewable("/userLogin.jsp",result)).build();
 			
-		}else{
+		}else if(usermodel.getRole().equalsIgnoreCase("user")){
+			result = usermodel.getUserFirstName();
 			response = Response.ok(new Viewable("/displayQuestions.jsp",result)).build();
+		}else{
+			result = usermodel.getUserFirstName();
+			response = Response.ok(new Viewable("/admin.jsp",result)).build();
 		}
 		return response;
 	}
