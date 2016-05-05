@@ -1,0 +1,83 @@
+package command;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import connectionprovider.ConnectionProvider;
+import model.Questions;
+
+public class QuestionDriveCommand {
+	
+	ObjectMapper mapper = new ObjectMapper();
+	
+	//Logger logger = Logger.getLogger(QuestionDriveCommand.class);
+	Connection connection;
+	
+	public QuestionDriveCommand(){
+		try{
+			connection = ConnectionProvider.getConnection();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	public Questions getQuestion(){
+		//logger.info("Into the getQuestions method of QuestionDriveCommand class:");
+		Questions questions = new Questions();
+		try{
+			Statement statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery("SELECT * FROM questions ORDER BY RANDOM() LIMIT 1");
+			while(rs.next()){
+				
+				String splitChoices[] = rs.getString("choices").split(",");
+				List<String> choicesList = new ArrayList<String>();
+				choicesList.add(splitChoices[0].trim());
+				choicesList.add(splitChoices[1].trim());
+				choicesList.add(splitChoices[2].trim());
+				choicesList.add(splitChoices[3].trim());
+				
+				questions.setQuestion(rs.getString("question").trim());
+				questions.setChoices(choicesList);
+				questions.setAnswer(rs.getString("answer").trim());
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+			//logger.error("Exception Occured in getQuestion method of QuestionDriveCommand class", ex);
+		}
+		return questions;
+	}
+	
+	public Questions driveQuestions(Questions questions){
+		//logger.info("Into the getQuestions method of QuestionDriveCommand class:");
+		try{
+			
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT userid FROM activeuser order by id asc limit 1");
+			int currUser = 0;
+			while(rs.next()){
+				currUser = rs.getInt("userid");
+			}
+			
+			PreparedStatement statement = connection.prepareStatement("INSERT INTO userresponse VALUES(?,?,?,?)");
+			statement.setInt(1, currUser);
+			statement.setString(2, questions.getQuestion().trim());
+			statement.setString(3, questions.getAnswer().trim());
+			statement.setString(4, questions.getOptions().trim());
+			statement.executeUpdate();
+		}catch(Exception ex){
+			ex.printStackTrace();
+			//logger.error("Exception Occured in getQuestion method of QuestionDriveCommand class", ex);
+		}
+	return getQuestion();
+}
+		
+	
+}
