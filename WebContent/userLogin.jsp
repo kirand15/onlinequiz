@@ -12,16 +12,10 @@
 
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript">
+	
+var contextPath='<%=request.getContextPath()%>';
 	function goToUserReg(){
-		$.ajax({
-	        type: "GET",
-	        url:contextPath+"/rest/interview/mvc/getQuestions",
-	        success: function (result) {
-	        },
-	        error: function (xhr, status, error) {
-	        	alert(xhr.responseText);
-	        }
-	    });
+		window.location = contextPath+"/rest/interview/mvc/goToReg";
 	}
 </script>
 <body>
@@ -29,8 +23,8 @@
 	
 		<div class="container">
 		
-			<a href="registration.html" class="navbar-brand">HOME</a>
-			<a href="registration.html" class="navbar-brand" onclick="goToUserReg()">Register</a>
+			<a class="navbar-brand">HOME</a>
+			<a href="#" class="navbar-brand" onclick="goToUserReg()">Register</a>
 						
 		</div>
 		

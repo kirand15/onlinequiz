@@ -79,5 +79,23 @@ public class QuestionDriveCommand {
 	return getQuestion();
 }
 		
+	public List<Questions> modifyUpdate(){
+		List<Questions> questionsList = new ArrayList<Questions>();
+		Questions questions;
+		try{
+			Statement statement = connection.createStatement();
+			ResultSet rs = statement.executeQuery("SELECT * FROM questions");
+			while(rs.next()){
+				questions = new Questions();
+				questions.setQuestion(rs.getString("question"));
+				questions.setOptions(rs.getString("choices"));
+				questions.setAnswer(rs.getString("answer"));
+				questionsList.add(questions);
+			}
+		}catch(Exception ex){
+			
+		}
+		return questionsList;
+	}
 	
 }

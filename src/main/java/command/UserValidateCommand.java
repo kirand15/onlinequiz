@@ -56,7 +56,7 @@ public class UserValidateCommand {
 	public String userRegistration(userModel usermodel){
 		try{
 			int userid = 0;
-			String sql = "INSERT INTO userdata VALUES(?,?,?,?,?,?)";
+			String sql = "INSERT INTO userdata VALUES(?,?,?,?,?,?,?)";
 			PreparedStatement statement = connection.prepareStatement(sql);
 			Statement st = connection.createStatement();
 			ResultSet rs = st.executeQuery("SELECT MAX(userid)as userid FROM userdata");
@@ -69,6 +69,7 @@ public class UserValidateCommand {
 			statement.setString(4, usermodel.getUserEmail());
 			statement.setString(5, usermodel.getPhone());
 			statement.setString(6, usermodel.getPassword());
+			statement.setString(7, "user");
 			statement.executeUpdate(); 
 		}catch(Exception ex){
 			ex.printStackTrace();
