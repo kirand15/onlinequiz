@@ -1,6 +1,7 @@
 package services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -54,12 +55,14 @@ public class Services {
 			result = "Invalid Username/Password";
 			response = Response.ok(new Viewable("/userLogin.jsp",result)).build();
 			
-		}else if(usermodel.getRole().equalsIgnoreCase("user")){
+		}else if(usermodel.getRole() != null && usermodel.getRole().trim().equalsIgnoreCase("user")){
 			result = usermodel.getUserFirstName();
 			response = Response.ok(new Viewable("/displayQuestions.jsp",result)).build();
-		}else{
+		}else if(usermodel.getRole() != null && usermodel.getRole().trim().equalsIgnoreCase("admin")){
 			result = usermodel.getUserFirstName();
 			response = Response.ok(new Viewable("/admin.jsp",result)).build();
+		}else{
+			response = Response.ok(new Viewable("/userRegistration.jsp","")).build();
 		}
 		return response;
 	}
@@ -138,12 +141,32 @@ public class Services {
 		}
 
 	@GET
+	@Path("mvc/modifyUpdate")
+	@Produces(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response updateModifyQues(){
+		QuestionDriveCommand questionDriveCommand = new QuestionDriveCommand();
+		List<Questions> questionsList = new ArrayList<Questions>();
+		questionsList = questionDriveCommand.modifyUpdate();
+		return Response.ok(new Viewable("/modifyQuestions.jsp",questionsList)).build();
+	}
+	
+	@GET
 	@Path("mvc/showUsersList")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response showUsersList(){
 		List<userModel> usersList = new ArrayList<userModel>();
+		HashMap hashmap = new HashMap();
+		
 		AdminCommand adminCommand = new AdminCommand();
 		usersList = adminCommand.showUsersList();
-		return Response.ok(new Viewable("/showUsersList.jsp",usersList)).build();
+		hashmap.put("userList", usersList);
+		String userString = null;
+		try{
+			userString = mapper.writeValueAsString(hashmap);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		return Response.ok(new Viewable("/showUsersList.jsp"),userString).entity(userString).build();
 	}
 	
 	@POST
@@ -158,6 +181,22 @@ public class Services {
 	@Path("mvc/goToReg")
 	public Response goToReg(){
 		return Response.ok(new Viewable("/userRegistration.jsp","")).build();
+	}
+	
+	@GET
+	@Path("mvc/addQuestion")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String addQuestion(@QueryParam("question") String question,
+				@QueryParam("options") String options,
+				@QueryParam("answer") String answer){
+		Questions questions = new Questions();
+		questions.setQuestion(question);
+		questions.setOptions(options);
+		questions.setAnswer(answer);
+		AdminCommand adminCommand = new AdminCommand();
+		adminCommand.addQuestion(questions);
+		String message = "Question Added successfully";
+		return message;
 	}
 	
 	@DELETE
