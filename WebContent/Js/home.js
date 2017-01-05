@@ -64,6 +64,30 @@ function callNextQuestion(){
     });	
 }
 
+function callManageUsers(){
+	$("#addQuestion").css("visibility","hidden");
+	 $.ajax({
+        type: "GET",
+        url: contextPath+"/rest/interview/mvc/showUsersList",
+        success: function (result) {
+        	var appenddata = "<HTML><BODY>";
+        	for(var i = 0; i<result.userList.length;i++){
+        		appenddata =appenddata+ "<SPAN>First Name:"+result.userList[i].userFirstName+"</SPAN><BR>"+
+        		"<SPAN>Last Name:"+result.userList[i].userLastNAme+"</SPAN><BR>"+
+        		"<SPAN>Email:"+result.userList[i].userEmail+"</SPAN><BR>"
+        		+"<SPAN>phone:"+result.userList[i].phone+
+        		"</SPAN><BR><BUTTON onclick='deleteUser("+result.userList[i].userEmail+")'>Delete</BUTTON><BR>";
+        	}
+        	appenddata = appenddata+"</BODY></HTML>";
+        	$("#showUsersData").text(appenddata)
+        	$("#delete").css("visisbility","visible");
+        	$("#showUsersData").css("visibility","visible");		
+        },
+        error: function (xhr, status, error) {
+        	alert(xhr.responseText);
+        }
+    });
+}
 function logoutUser(){
 	$.ajax({
         type: "GET",

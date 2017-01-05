@@ -6,15 +6,17 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Interview App</title>
 </head>
-<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script type="text/javascript">
 
-var count = 0;
-var asnwer;
+var numberOfQuestions = 0;
+var questionsCount = 0;
+var correctAns = 0
+var answer = "";
 var contextPath='<%=request.getContextPath()%>';
 
 function callQuestions(){
-	
+	numberOfQuestions = $("#noOfQues").val();
 	 $.ajax({
 	        type: "POST",
 	        url:contextPath+"/rest/interview/mvc/getQuestions",
@@ -23,12 +25,12 @@ function callQuestions(){
 	            var questionContent = result.split("-");
 	            var choiceList = questionContent[1].split(",");
 	            var questionAnswer = questionContent[2]; 
-	            $("#choice1").text("1. "+choiceList[0]);
+	            $("#choice1").text("1. "+choiceList[0].substring(1,choiceList[0].length));
 	            $("#choice2").text("2. "+choiceList[1]);
 	            $("#choice3").text("3. "+choiceList[2]);
-	            $("#choice4").text("4. "+choiceList[3]);
+	            $("#choice4").text("4. "+choiceList[3].substring(0,choiceList[3].length-1));
 	            $("#questionContent").text(questionContent[0]);
-	            asnwer = questionContent[2];
+	            answer = questionContent[2].trim();
 	            $("#showQuestion").css("visibility","visible");
 	        },
 	        error: function (xhr, status, error) {
@@ -38,53 +40,88 @@ function callQuestions(){
 }
 
 function callNextQuestion(){
-	var question = $("#questionContent").text();
-	var selectedChoice = $("#choiceSelected").val();
-	if(answer == selectedChoice) {
-		count = count + 1;
-	}
+		var question = $("#questionContent").text();
+		var selectedChoice = $("#choiceSelected").val().trim();
+		if(answer == selectedChoice){
+			correctAns = correctAns + 1;
+		}
+		$.ajax({
+	        type: "POST",
+	        url:contextPath+"/rest/interview/mvc/driveQuestions",
+	        data : {
+	        	question : question,
+	        	answer : answer,
+	        	selected : selectedChoice
+	        },
+	        success: function (result) {
+	        	$("#proceedQuestion").hide();
+	        	if(questionsCount < numberOfQuestions){
+	            var questionContent = result.split("-");
+	            var choiceList = questionContent[1].split(",");
+	            var questionAnswer = questionContent[2]; 
+	            $("#choice1").text("1. "+choiceList[0].substring(1,choiceList[0].length));
+	            $("#choice2").text("2. "+choiceList[1]);
+	            $("#choice3").text("3. "+choiceList[2]);
+	            $("#choice4").text("4. "+choiceList[3].substring(0,choiceList[3].length-1));
+	            $("#questionContent").text(questionContent[0]);
+	            answer = questionContent[2].trim();
+	            $("#showQuestion").css("visibility","visible");
+	            $("#choiceSelected").val("");
+	            questionsCount = questionsCount + 1;
+	        	}else{
+	        		$("#showQuestion").css("display","none");
+	        		$("#testEnd").css("visibility","visible");
+	        	}
+	        },
+	        error: function (xhr, status, error) {
+	        	alert(xhr.responseText);
+	        }
+	    });
+}
+
+function showTestSummary(){
 	$.ajax({
         type: "POST",
         url:contextPath+"/rest/interview/mvc/driveQuestions",
-        data:{
-        	question: question,
-        	selected: selectedChoice,
-        	answer: answer
+        data : {
+        	correctAns : correctAns,
+        	numberOfQuestions : numberOfQuestions,
         },
         success: function (result) {
-        	$("#proceedQuestion").hide();
-            var questionContent = result.split("-");
-            var choiceList = questionContent[1].split(",");
-            var questionAnswer = questionContent[2]; 
-            $("#choice1").text("1. "+choiceList[0].substring(1,choiceList[0].length));
-            $("#choice2").text("2. "+choiceList[1]);
-            $("#choice3").text("3. "+choiceList[2]);
-            $("#choice4").text("4. "+choiceList[3].substring(0,choiceList[0].length-1));
-            $("#questionContent").text(questionContent[0]);
-            asnwer = questionContent[2];
-            $("#showQuestion").css("visibility","visible");
+        	$("#testEnd").hide();
+        	$("#showResult").text("Answered correctly "+correctAns+ "out of "+numberOfQuestions);
+        	$("#resultData").css("visibility","visible");
         },
         error: function (xhr, status, error) {
         	alert(xhr.responseText);
         }
-    });	
+    });
 }
 
+function goToUserReg(){
+	window.location = contextPath+"/rest/interview/mvc/goToReg";
+}
 
-$("#clickProceed").click( function()
-        {
-		
+function logOut(){
+	$.ajax({
+        type: "POST",
+        url:contextPath+"/rest/interview/mvc/logOut",
+        success: function (result) {
+        	window.location = contextPath+"/rest/interview/mvc/logOutUser";
+        },
+        error: function (xhr, status, error) {
+        	alert(xhr.responseText);
         }
-     );
+    });
+	/* window.location = contextPath+"/rest/interview/mvc/logOut"; */
+}
 </script>
+<jsp:include page="header.html"></jsp:include>
 <body>
 	<div class="navbar navbar-static-top navbar-inverse">
 	
 		<div class="container">
-		
-			<a href="registration.html" class="navbar-brand">HOME</a>
-			<a href="registration.html" class="navbar-brand">Profile</a>
-	
+			<a href="#" class="navbar-brand" onclick="logOut()">Logout</a>
 		</div>
 		
 	</div>
@@ -99,7 +136,7 @@ $("#clickProceed").click( function()
 							<div class="form-group">
 								<label for="" class="col-sm-2 control-label">Enter the amount of question to be displayed( max 25):</label>
 								<div class="col-sm-10">
-									<input type="text" class="form-control" id="questionAmount">
+									<input type="text" class="form-control" id="noOfQues">
 								</div>
 							</div>
 							<div class="form-group">
@@ -124,7 +161,7 @@ $("#clickProceed").click( function()
 								</div>
 								<br>
 								
-								<div>
+								<div class="form-group">
 									Type the correct answer below!<br>
 									<input type="text" id="choiceSelected"/>
 									<input type="text" id="answer" style="visibility: hidden;"/>
@@ -138,10 +175,21 @@ $("#clickProceed").click( function()
 								</div>
 							</div>
 						</div>
+						<div id="showTestSummary" style="visibility: hidden;">
+							<span id="summary">
+							</span>
+						</div>
 				</div>
+					<div id="testEnd" style="visibility: hidden;">
+						<h1>Thank You! End of Test. CLick Proceed to view the Result.</h1>
+						<input type="button" value="Proceed" onclick="showTestSummary()"/>			
+					</div>
+					<div id="resultData" style="visibility: hidden;">
+						<span id="showResult"></span>
+					</div>
 			</div>		
 		</div>
 	</div> 
 </body>
-
+<jsp:include page="footer.html"></jsp:include>
 </html>

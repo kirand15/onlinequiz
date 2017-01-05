@@ -6,12 +6,13 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Insert title here</title>
 </head>
+<jsp:include page="header.html"></jsp:include>
 <body>
 	<div class="navbar navbar-static-top navbar-inverse">
 	
 		<div class="container">
 			
-			<a href="#" class="navbar-brand">Interview APP</a>
+			<a href="#" class="navbar-brand">Home</a>
 			<a href="#" class="navbar-brand">LOGIN</a>
 						
 		</div>
@@ -92,4 +93,5 @@
 		
 	</div>
 </body>
+<jsp:include page="footer.html"></jsp:include>
 </html>

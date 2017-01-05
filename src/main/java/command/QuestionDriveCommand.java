@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +64,7 @@ public class QuestionDriveCommand {
 		try{
 			
 			Statement stmt = connection.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT userid FROM activeuser order by id asc limit 1");
+			ResultSet rs = stmt.executeQuery("SELECT userid FROM activeuser order by userid asc limit 1");
 			int currUser = 0;
 			while(rs.next()){
 				currUser = rs.getInt("userid");
@@ -79,6 +83,29 @@ public class QuestionDriveCommand {
 	return getQuestion();
 }
 		
+	public void showSummary(int answers){
+		DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		int currUser = 0;
+		try{
+			LocalDate localDate = LocalDate.now();
+	        System.out.println();
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT userid FROM activeuser order by userid asc limit 1");
+			while(rs.next()){
+				currUser = rs.getInt("userid");
+				}
+			PreparedStatement statement = connection.prepareStatement("INSERT INTO userrecords VALUES(?,?,?)");
+			statement.setInt(1, currUser);
+			statement.setInt(2, answers);
+			statement.setString(3, DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate));
+			//statement.setString(4, questions.getOptions().trim());
+			statement.executeUpdate();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
 	public List<Questions> modifyUpdate(){
 		List<Questions> questionsList = new ArrayList<Questions>();
 		Questions questions;

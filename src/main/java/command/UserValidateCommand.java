@@ -9,10 +9,14 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import Constants.AppConstants;
 import connectionprovider.ConnectionProvider;
 import model.userModel;
 
 public class UserValidateCommand {
+	
+	AppConstants constants = new AppConstants();
+	
 	ObjectMapper mapper = new ObjectMapper();
 	
 	//Logger logger = Logger.getLogger(UserValidateCommand.class);
@@ -37,8 +41,8 @@ public class UserValidateCommand {
 			sql = "SELECT * FROM public.userdata WHERE email ='"+usermodel.getUserEmail()+"' and password = '"+usermodel.getPassword()+"'";
 			rs = statement.executeQuery(sql);
 			while (rs.next()) {
-				PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO activeuser VALUES(?)");
-				preparedStatement.setString(1, usermodel.getUserEmail());
+				PreparedStatement preparedStatement = connection.prepareStatement(constants.insertUserValues);
+				preparedStatement.setInt(1, rs.getInt("userid"));
 				preparedStatement.executeUpdate();
 				
 				usermodel.setRole(rs.getString("role"));
@@ -59,7 +63,7 @@ public class UserValidateCommand {
 			String sql = "INSERT INTO userdata VALUES(?,?,?,?,?,?,?)";
 			PreparedStatement statement = connection.prepareStatement(sql);
 			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery("SELECT MAX(userid)as userid FROM userdata");
+			ResultSet rs = st.executeQuery(constants.maxUserID);
 			while(rs.next()){
 				userid = Integer.parseInt(rs.getString("userid"));
 			}
@@ -74,13 +78,14 @@ public class UserValidateCommand {
 		}catch(Exception ex){
 			ex.printStackTrace();
 			}
-		return "Registration Successfull";
+		return constants.regSuccess;
 		}
 	
 	public void logoutUser(){
 		try{
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("DELETE FROM activeuser");
+			statement.executeUpdate("Delete from userresponse");
 		}catch(Exception ex){
 			//logger.error(ex);
 		}

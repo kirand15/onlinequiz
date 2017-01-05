@@ -9,7 +9,9 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -19,6 +21,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import Constants.AppConstants;
 import command.AdminCommand;
 import command.FeedbackCommand;
 import command.QuestionDriveCommand;
@@ -29,6 +32,9 @@ import model.userModel;
 
 @Path("interview")
 public class Services {
+	
+	AppConstants constants = new AppConstants();
+	
 	ObjectMapper mapper = new ObjectMapper();
 	
 	@GET
@@ -108,9 +114,9 @@ public class Services {
 	@POST
 	@Path("mvc/driveQuestions")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String nextQuestions(@QueryParam("question") String question,
-			@QueryParam("answer") String answer,
-			@QueryParam("selected") String selectedChoice) {
+	public String nextQuestions(@FormParam("question") String question,
+			@FormParam("answer") String answer,
+			@FormParam("selected") String selectedChoice) {
 		
 		Questions questions = new Questions();
 		
@@ -153,7 +159,7 @@ public class Services {
 	@GET
 	@Path("mvc/showUsersList")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response showUsersList(){
+	public String showUsersList(){
 		List<userModel> usersList = new ArrayList<userModel>();
 		HashMap hashmap = new HashMap();
 		
@@ -166,7 +172,7 @@ public class Services {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		return Response.ok(new Viewable("/showUsersList.jsp"),userString).entity(userString).build();
+		return userString;
 	}
 	
 	@POST
@@ -195,12 +201,47 @@ public class Services {
 		questions.setAnswer(answer);
 		AdminCommand adminCommand = new AdminCommand();
 		adminCommand.addQuestion(questions);
-		String message = "Question Added successfully";
+		String message = constants.QueAddSuccess;
 		return message;
 	}
 	
-	@DELETE
-	@Path("mvc/logoutUser")
+	@PUT
+	@Path("mvc/updateQuestion")
+	public Response updateQuestion(@QueryParam("question") String question,
+			@QueryParam("choices") String choices,
+			@QueryParam("answer") String answer){
+		Questions questions = new Questions();
+		questions.setQuestion(question);
+		questions.setOptions(choices);
+		questions.setAnswer(answer);
+		AdminCommand adminCommand = new AdminCommand();
+		adminCommand.updateQuestion(questions);
+		return Response.ok(new Viewable("/admin.jsp","")).build();
+	}
+	
+	@POST
+	@Path("mvc/testSummary")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String showSummary(@FormParam("correctAns") int correctAns,
+			@FormParam("answer") String numberOfQuestions){
+		QuestionDriveCommand questionDriveCommand = new QuestionDriveCommand();
+		try{
+			questionDriveCommand.showSummary(correctAns);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		//return Response.ok(responseList).build();
+		return "success";
+	}
+	
+	@GET
+	@Path("mvc/logOutUser")
+	public Response logout(){
+		return Response.ok(new Viewable("/userLogin.jsp","")).build();
+	}
+	
+	@POST
+	@Path("mvc/logOut")
 	public Response logoutUser(){
 		UserValidateCommand userValidateCommand = new UserValidateCommand();
 		userValidateCommand.logoutUser();
@@ -209,9 +250,13 @@ public class Services {
 	
 	
 	@DELETE
-	@Path("mvc/deleteQuestion")
-	public void deleteQuestion(){
-		
+	@Path("mvc/deleteUser")
+	public Response deleteQuestion(@QueryParam("email") String email){
+		userModel usermodel = new userModel(); 
+		AdminCommand adminCommand = new AdminCommand();
+		usermodel.setUserEmail(email);
+		adminCommand.deleteUser(usermodel);
+		return Response.ok(new Viewable("/admin.jsp","")).build();
 	}
 	// Search songs
 }
